@@ -127,3 +127,56 @@ export interface ZodiacMatch {
   score: number;
   comment: string;
 }
+
+// R3: Pool & Matching
+export interface PoolCandidate {
+  user_id: string;
+  display_name: string | null;
+  age_bucket: string | null;
+  city: string | null;
+  zodiac: string | null;
+  gender_pref: string | null;
+  similarity: number;
+  photo_url: string | null;
+}
+
+// R6: Share & Invites
+export interface ShareLink {
+  id: string;
+  session_id: string;
+  user_id: string;
+  token: string;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface InviteReward {
+  count: number;
+  reward: string;
+  label: string;
+}
+
+export interface InviteStatus {
+  invites: Array<{
+    id: string;
+    code: string;
+    invitee_id: string | null;
+    is_valid: boolean;
+    created_at: string;
+  }>;
+  total: number;
+  redeemed: number;
+  rewards: InviteReward[];
+  next_reward: InviteReward | null;
+}
+
+export interface ShareToken {
+  token: string;
+  url: string;
+  expires_at: string;
+}
+
+export interface PoolStats {
+  pool_members: number;
+  sketches_created: number;
+}
