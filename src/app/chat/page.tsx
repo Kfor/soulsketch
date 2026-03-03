@@ -339,6 +339,7 @@ export default function ChatPage() {
             keywords={keywords}
             zodiacMatches={zodiacMatches}
             userSign={summary.zodiac || "Unknown"}
+            sessionId={sessionId || undefined}
             isFreeTier={true}
           />
         )}
