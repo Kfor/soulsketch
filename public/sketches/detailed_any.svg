@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d2845"/>
+      <stop offset="100%" style="stop-color:#1e1b2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)" rx="16"/>
+  <ellipse cx="200" cy="110" rx="48" ry="56" fill="none" stroke="#a78bfa" stroke-width="2.5" opacity="0.8"/>
+  <path d="M 152 94 Q 150 50 200 42 Q 250 50 248 94" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.6"/>
+  <ellipse cx="181" cy="102" rx="8" ry="5" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.7"/>
+  <circle cx="181" cy="102" r="2.5" fill="#a78bfa" opacity="0.5"/>
+  <ellipse cx="219" cy="102" rx="8" ry="5" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.7"/>
+  <circle cx="219" cy="102" r="2.5" fill="#a78bfa" opacity="0.5"/>
+  <path d="M 171 93 Q 181 89 191 93" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 209 93 Q 219 89 229 93" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 200 108 L 197 122 Q 200 125 203 122 Z" fill="none" stroke="#a78bfa" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 187 135 Q 200 143 213 135" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.6"/>
+  <line x1="191" y1="166" x2="191" y2="188" stroke="#a78bfa" stroke-width="2" opacity="0.6"/>
+  <line x1="209" y1="166" x2="209" y2="188" stroke="#a78bfa" stroke-width="2" opacity="0.6"/>
+  <path d="M 145 200 Q 143 188 200 188 Q 257 188 255 200 L 253 308 Q 253 318 200 320 Q 147 318 147 308 Z" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.7"/>
+  <path d="M 145 200 Q 128 235 130 280" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.5"/>
+  <path d="M 255 200 Q 272 235 270 280" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.5"/>
+  <text x="200" y="395" text-anchor="middle" fill="#a09cb5" font-size="11" font-family="sans-serif">Getting clearer!</text>
+</svg>
