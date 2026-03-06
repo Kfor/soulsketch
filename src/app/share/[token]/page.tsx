@@ -27,31 +27,42 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function SharePage({ params }: Props) {
   const { token } = await params;
-  const supabase = await createServiceSupabase();
 
-  // Look up the share link
-  const { data: shareLink } = await supabase
-    .from("share_links")
-    .select("session_id, expires_at")
-    .eq("token", token)
-    .single();
+  let shareLink: { session_id: string; expires_at: string } | null = null;
+  let portraitUrl: string | null = null;
+
+  try {
+    const supabase = await createServiceSupabase();
+
+    // Look up the share link
+    const { data } = await supabase
+      .from("share_links")
+      .select("session_id, expires_at")
+      .eq("token", token)
+      .single();
+
+    shareLink = data;
+
+    const isExpired = shareLink && new Date(shareLink.expires_at) < new Date();
+
+    // Get portrait from chat messages if valid
+    if (shareLink && !isExpired) {
+      const { data: messages } = await supabase
+        .from("chat_messages")
+        .select("content_image_url")
+        .eq("session_id", shareLink.session_id)
+        .not("content_image_url", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      portraitUrl = messages?.[0]?.content_image_url || null;
+    }
+  } catch {
+    // Supabase unavailable — fall through to generic CTA
+  }
 
   const isExpired = shareLink && new Date(shareLink.expires_at) < new Date();
   const isValid = shareLink && !isExpired;
-
-  // Get portrait from chat messages if valid
-  let portraitUrl: string | null = null;
-  if (isValid) {
-    const { data: messages } = await supabase
-      .from("chat_messages")
-      .select("content_image_url")
-      .eq("session_id", shareLink.session_id)
-      .not("content_image_url", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    portraitUrl = messages?.[0]?.content_image_url || null;
-  }
 
   return (
     <div className="min-h-dvh bg-surface">
