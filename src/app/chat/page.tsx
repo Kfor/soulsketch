@@ -36,6 +36,7 @@ export default function ChatPage() {
   const [showResults, setShowResults] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [lastPortraitUrl, setLastPortraitUrl] = useState<string>("");
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Result cards data
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -50,8 +51,11 @@ export default function ChatPage() {
   }, [messages, loading, scrollToBottom]);
 
   // Initialize: auth + session + first message
-  useEffect(() => {
-    async function init() {
+  const initRef = useRef(false);
+  const init = useCallback(async () => {
+    setAuthError(null);
+    setInitializing(true);
+    async function run() {
       // Check age gate
       const ageVerified = localStorage.getItem("soulsketch_age_verified");
       if (ageVerified !== "true") {
@@ -172,13 +176,23 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error("Init error:", error);
+        setAuthError(
+          error instanceof Error ? error.message : "Failed to connect. Please try again.",
+        );
       } finally {
         setInitializing(false);
       }
     }
 
-    init();
+    run();
   }, [router]);
+
+  useEffect(() => {
+    if (!initRef.current) {
+      initRef.current = true;
+      init();
+    }
+  }, [init]);
 
   async function sendMessage(text: string, selectedOption?: string) {
     if (!sessionId || loading) return;
@@ -284,6 +298,24 @@ export default function ChatPage() {
       ? JSON.parse(lastAssistantMsg.content_options)
       : lastAssistantMsg.content_options
     : null;
+
+  if (authError) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface p-6">
+        <div className="max-w-sm rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
+          <div className="mb-4 text-4xl">&#9888;&#65039;</div>
+          <h2 className="text-lg font-semibold text-red-400">Connection Error</h2>
+          <p className="mt-2 text-sm text-red-300/70">{authError}</p>
+          <button
+            onClick={init}
+            className="mt-6 rounded-xl bg-primary px-6 py-2.5 font-medium text-white transition-colors hover:bg-primary-dark"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (initializing) {
     return (

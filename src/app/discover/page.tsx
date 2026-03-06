@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ensureAnonymousAuth } from "@/lib/auth";
@@ -28,6 +28,7 @@ export default function DiscoverPage() {
   const [fetching, setFetching] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [error, setError] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<{
@@ -37,35 +38,45 @@ export default function DiscoverPage() {
     gender_pref?: string;
   }>({});
 
-  useEffect(() => {
-    async function init() {
-      try {
-        await ensureAnonymousAuth();
-        const supabase = createClient();
-        const { data: { user: u } } = await supabase.auth.getUser();
-        setUser(u);
+  const initRef = useRef(false);
+  const init = useCallback(async () => {
+    setAuthError(null);
+    setLoading(true);
+    try {
+      await ensureAnonymousAuth();
+      const supabase = createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
+      setUser(u);
 
-        // Check if user is in pool
-        if (u) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("is_in_pool")
-            .eq("id", u.id)
-            .single();
+      // Check if user is in pool
+      if (u) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_in_pool")
+          .eq("id", u.id)
+          .single();
 
-          if (!profile?.is_in_pool) {
-            router.push("/pool/join");
-            return;
-          }
+        if (!profile?.is_in_pool) {
+          router.push("/pool/join");
+          return;
         }
-      } catch (e) {
-        console.error("Auth error:", e);
-      } finally {
-        setLoading(false);
       }
+    } catch (e) {
+      console.error("Auth error:", e);
+      setAuthError(
+        e instanceof Error ? e.message : "Failed to connect. Please try again.",
+      );
+    } finally {
+      setLoading(false);
     }
-    init();
   }, [router]);
+
+  useEffect(() => {
+    if (!initRef.current) {
+      initRef.current = true;
+      init();
+    }
+  }, [init]);
 
   const fetchRecommendations = useCallback(async () => {
     if (!user) return;
@@ -124,6 +135,24 @@ export default function DiscoverPage() {
       console.error("Like error:", err);
     }
   };
+
+  if (authError) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface p-6">
+        <div className="max-w-sm rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
+          <div className="mb-4 text-4xl">&#9888;&#65039;</div>
+          <h2 className="text-lg font-semibold text-red-400">Connection Error</h2>
+          <p className="mt-2 text-sm text-red-300/70">{authError}</p>
+          <button
+            onClick={init}
+            className="mt-6 rounded-xl bg-primary px-6 py-2.5 font-medium text-white transition-colors hover:bg-primary-dark"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

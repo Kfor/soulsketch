@@ -1,16 +1,33 @@
 import { createClient } from "@/lib/supabase/client";
 
+const AUTH_TIMEOUT_MS = 10_000;
+
+export class AuthTimeoutError extends Error {
+  constructor() {
+    super("Authentication timed out. Please check your connection and try again.");
+    this.name = "AuthTimeoutError";
+  }
+}
+
 export async function ensureAnonymousAuth() {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const auth = async () => {
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  if (session) return session;
+    if (session) return session;
 
-  const { data, error } = await supabase.auth.signInAnonymously();
-  if (error) throw new Error(`Anonymous sign-in failed: ${error.message}`);
-  return data.session!;
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) throw new Error(`Anonymous sign-in failed: ${error.message}`);
+    return data.session!;
+  };
+
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new AuthTimeoutError()), AUTH_TIMEOUT_MS),
+  );
+
+  return Promise.race([auth(), timeout]);
 }
 
 export async function linkEmailOTP(email: string) {

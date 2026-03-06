@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ensureAnonymousAuth } from "@/lib/auth";
@@ -19,6 +19,7 @@ export default function PoolJoinPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     display_name: "",
@@ -31,21 +32,31 @@ export default function PoolJoinPage() {
     ageConfirmed: false,
   });
 
-  useEffect(() => {
-    async function init() {
-      try {
-        await ensureAnonymousAuth();
-        const supabase = createClient();
-        const { data: { user: u } } = await supabase.auth.getUser();
-        setUser(u);
-      } catch (e) {
-        console.error("Auth error:", e);
-      } finally {
-        setLoading(false);
-      }
+  const initRef = useRef(false);
+  const init = useCallback(async () => {
+    setAuthError(null);
+    setLoading(true);
+    try {
+      await ensureAnonymousAuth();
+      const supabase = createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
+      setUser(u);
+    } catch (e) {
+      console.error("Auth error:", e);
+      setAuthError(
+        e instanceof Error ? e.message : "Failed to connect. Please try again.",
+      );
+    } finally {
+      setLoading(false);
     }
-    init();
   }, []);
+
+  useEffect(() => {
+    if (!initRef.current) {
+      initRef.current = true;
+      init();
+    }
+  }, [init]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +87,24 @@ export default function PoolJoinPage() {
       setSubmitting(false);
     }
   };
+
+  if (authError) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface p-6">
+        <div className="max-w-sm rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center">
+          <div className="mb-4 text-4xl">&#9888;&#65039;</div>
+          <h2 className="text-lg font-semibold text-red-400">Connection Error</h2>
+          <p className="mt-2 text-sm text-red-300/70">{authError}</p>
+          <button
+            onClick={init}
+            className="mt-6 rounded-xl bg-primary px-6 py-2.5 font-medium text-white transition-colors hover:bg-primary-dark"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
