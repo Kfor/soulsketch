@@ -49,7 +49,16 @@
 |--------|--------|
 | Package | `stripe` ^20.4.0 |
 | Client lib | `src/lib/stripe.ts` |
-| Products | Plus monthly subscription, HD export one-time purchase |
+| Products | Plus monthly subscription ($9.99/mo), HD export one-time purchase ($3.99) |
+| Account | `acct_1SvZNEANb9PN7Uxv` |
+| Provisioning | `scripts/stripe-provision.sh` (creates products + prices) |
+
+**Products (test mode):**
+
+| Product | Stripe ID | Price ID | Amount | Type |
+|---------|-----------|----------|--------|------|
+| SoulSketch HD Export | `prod_TzqMnWwLIut0i1` | `price_1T1qg2ANb9PN7Uxv0o8a69Ds` | $3.99 | one-time |
+| SoulSketch Plus | `prod_TzqMqn1DhBzoyq` | `price_1T1qgKANb9PN7Uxv5IxIEDGL` | $9.99/mo | recurring |
 
 **API routes:**
 
@@ -59,6 +68,24 @@
 | `/api/stripe/webhook` | POST | none (signature verified) | Handle `checkout.session.completed`, `customer.subscription.deleted` |
 
 Webhook updates `entitlements` (plan, credits, limits) and `profiles` (stripe_customer_id) on successful payment.
+
+**Production setup:**
+
+```bash
+# 1. Create live-mode products
+./scripts/stripe-provision.sh --live
+
+# 2. Set env vars in hosting provider (Vercel):
+#    STRIPE_SECRET_KEY=sk_live_...
+#    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+#    STRIPE_PRICE_EXPORT_HD=price_...  (from step 1 output)
+#    STRIPE_PRICE_PLUS_MONTHLY=price_...  (from step 1 output)
+
+# 3. Create webhook at https://dashboard.stripe.com/webhooks
+#    URL: https://<your-domain>/api/stripe/webhook
+#    Events: checkout.session.completed, customer.subscription.deleted
+#    Copy signing secret → STRIPE_WEBHOOK_SECRET
+```
 
 ### 1.3 OpenAI-compatible LLM (Chat)
 
