@@ -8,9 +8,12 @@
 |--------|--------|
 | Packages | `@supabase/ssr` ^0.6.1, `@supabase/supabase-js` ^2.49.1 |
 | Auth methods | Email OTP, anonymous sign-in |
-| Database | PostgreSQL 15 with `pgvector` extension |
+| Database | PostgreSQL 15 (local) / 17 (production) with `pgvector` extension |
 | Storage | `pool-photos` bucket (private, user-scoped, 50 MiB limit) |
 | Local ports | API: 54321, DB: 54322 |
+| Production project | `fargmywxtjupanwzrzcm` (East US / North Virginia) |
+| Production URL | `https://fargmywxtjupanwzrzcm.supabase.co` |
+| Dashboard | `https://supabase.com/dashboard/project/fargmywxtjupanwzrzcm` |
 
 **Tables (12 total):**
 
@@ -152,7 +155,32 @@ All variables are defined in `.env.example`. Copy to `.env.local` for local deve
 
 ---
 
-## 3. Local Development Setup
+## 3. Production Environment
+
+### Supabase Production
+
+| Item | Value |
+|------|-------|
+| Project ref | `fargmywxtjupanwzrzcm` |
+| Region | East US (North Virginia) |
+| API URL | `https://fargmywxtjupanwzrzcm.supabase.co` |
+| Dashboard | [supabase.com/dashboard/project/fargmywxtjupanwzrzcm](https://supabase.com/dashboard/project/fargmywxtjupanwzrzcm) |
+| DB version | PostgreSQL 17 |
+| Migrations | Applied (`00001_initial_schema`, `00002_pool_payments_growth`) |
+
+**Production env vars** (set in your deployment platform, e.g. Vercel):
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://fargmywxtjupanwzrzcm.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<from `supabase projects api-keys`>
+SUPABASE_SERVICE_ROLE_KEY=<from `supabase projects api-keys`>
+```
+
+> **Note:** Never commit production keys to the repo. Use `supabase projects api-keys --project-ref fargmywxtjupanwzrzcm` to retrieve them.
+
+---
+
+## 4. Local Development Setup
 
 ### Prerequisites
 
@@ -206,7 +234,7 @@ pnpm dev
 
 ---
 
-## 4. Architecture Diagram
+## 5. Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────┐
