@@ -1,7 +1,7 @@
 [api]
 port = 54321
-schemas = ["public", "graphql_public"]
-extra_search_path = ["public", "extensions"]
+schemas = ["soulsketch", "public", "graphql_public"]
+extra_search_path = ["soulsketch", "public", "extensions"]
 max_rows = 1000
 
 [db]

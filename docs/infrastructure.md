@@ -11,9 +11,10 @@
 | Database | PostgreSQL 15 (local) / 17 (production) with `pgvector` extension |
 | Storage | `pool-photos` bucket (private, user-scoped, 50 MiB limit) |
 | Local ports | API: 54321, DB: 54322 |
-| Production project | `fargmywxtjupanwzrzcm` (East US / North Virginia) |
-| Production URL | `https://fargmywxtjupanwzrzcm.supabase.co` |
-| Dashboard | `https://supabase.com/dashboard/project/fargmywxtjupanwzrzcm` |
+| Production instance | SmallProj shared (`lsqqmgescrxyruktzyoy`, West US / Oregon) |
+| Production schema | `soulsketch` (schema isolation on shared instance) |
+| Production URL | `https://lsqqmgescrxyruktzyoy.supabase.co` |
+| Dashboard | `https://supabase.com/dashboard/project/lsqqmgescrxyruktzyoy` |
 
 **Tables (12 total):**
 
@@ -44,7 +45,7 @@
 
 | Trigger | Event | Action |
 |---------|-------|--------|
-| `on_auth_user_created` | `AFTER INSERT ON auth.users` | Auto-creates `profiles` + `entitlements` rows |
+| `on_auth_user_created_soulsketch` | `AFTER INSERT ON auth.users` | Auto-creates `soulsketch.profiles` + `soulsketch.entitlements` rows |
 
 ### 1.2 Stripe (Payments)
 
