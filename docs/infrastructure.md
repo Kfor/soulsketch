@@ -90,37 +90,37 @@ Webhook updates `entitlements` (plan, credits, limits) and `profiles` (stripe_cu
 #    Copy signing secret → STRIPE_WEBHOOK_SECRET
 ```
 
-### 1.3 OpenAI-compatible LLM (Chat)
+### 1.3 LLM via OpenRouter (Chat)
 
 | Aspect | Detail |
 |--------|--------|
 | Package | None (raw `fetch`) |
 | Client lib | `src/lib/chat/llm-engine.ts` |
-| Default model | `gpt-4o` |
-| Default endpoint | `https://api.openai.com/v1/chat/completions` |
+| Default model | `gpt-4o` (via OpenRouter) |
+| Endpoint | `https://openrouter.ai/api/v1/chat/completions` |
 
-Generates chat responses during the `ai_gen` phase. Endpoint and model are configurable via env vars — can point to any OpenAI-compatible API. Falls back to canned responses when API key is not set.
+Generates chat responses during the `ai_gen` phase. Uses OpenRouter (OpenAI-compatible format). Model is configurable via `AI_LLM_MODEL`. Falls back to canned responses when API key is not set.
 
-### 1.4 OpenAI-compatible Image Generation (DALL-E 3)
+### 1.4 Image Generation via FAL
 
 | Aspect | Detail |
 |--------|--------|
 | Package | None (raw `fetch`) |
 | Client lib | `src/lib/ai/image-generator.ts` |
 | API route | `/api/generate-image` (POST, auth required) |
-| Default endpoint | `https://api.openai.com/v1/images/generations` |
+| Endpoint | `https://queue.fal.run/fal-ai/flux/schnell` |
 
-Generates portrait images. Falls back to SVG placeholder when API key is not set.
+Generates portrait images using FAL (Flux Schnell model). Falls back to SVG placeholder when API key is not set.
 
-### 1.5 OpenAI Moderations API (Content Safety)
+### 1.5 Content Moderation via OpenRouter (Content Safety)
 
 | Aspect | Detail |
 |--------|--------|
 | Package | None (raw `fetch`) |
 | Client lib | `src/lib/security/content-moderator.ts` |
-| Endpoint | `https://api.openai.com/v1/moderations` |
+| Endpoint | `https://openrouter.ai/api/v1/chat/completions` |
 
-Optional. Local regex-based filtering runs first; API moderation is a second pass if `MODERATION_API_KEY` is configured. Fails open on API errors.
+Optional. Local regex-based filtering runs first; LLM-based moderation via OpenRouter is a second pass if `OPENROUTER_API_KEY` is configured. Fails open on API errors.
 
 ---
 
@@ -136,26 +136,18 @@ All variables are defined in `.env.example`. Copy to `.env.local` for local deve
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | client + server | — | Supabase anonymous/public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | — | Supabase admin key (bypasses RLS) |
 
-### AI — LLM
+### AI — LLM (OpenRouter)
 
 | Variable | Exposure | Default | Description |
 |----------|----------|---------|-------------|
-| `AI_LLM_API_KEY` | server only | — | Bearer token for chat completions API |
-| `AI_LLM_API_URL` | server only | `https://api.openai.com/v1/chat/completions` | Chat completions endpoint |
-| `AI_LLM_MODEL` | server only | `gpt-4o` | Model identifier |
+| `OPENROUTER_API_KEY` | server only | — | OpenRouter API key (used for LLM chat + moderation) |
+| `AI_LLM_MODEL` | server only | `gpt-4o` | Model identifier (OpenRouter format) |
 
-### AI — Image Generation
-
-| Variable | Exposure | Default | Description |
-|----------|----------|---------|-------------|
-| `AI_IMAGE_API_KEY` | server only | — | Bearer token for image generation API |
-| `AI_IMAGE_API_URL` | server only | `https://api.openai.com/v1/images/generations` | Image generation endpoint |
-
-### Content Moderation
+### AI — Image Generation (FAL)
 
 | Variable | Exposure | Default | Description |
 |----------|----------|---------|-------------|
-| `MODERATION_API_KEY` | server only | — | Optional. OpenAI Moderations API key |
+| `FAL_KEY` | server only | — | FAL API key for image generation |
 
 ### Rate Limiting
 
@@ -232,7 +224,7 @@ cp .env.example .env.local
 # Edit .env.local:
 #   - Set NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY
 #     from `supabase start` output
-#   - Set AI_LLM_API_KEY and AI_IMAGE_API_KEY if you want AI features
+#   - Set OPENROUTER_API_KEY and FAL_KEY if you want AI features
 #     (app works without them — uses fallback responses/placeholders)
 #   - Set Stripe keys if testing payments (optional for core features)
 
@@ -280,11 +272,11 @@ pnpm dev
 ┌─────────────────────────────────────────────────────┐
 │               Next.js API Routes (Server)           │
 │                                                     │
-│  /api/chat ──────────────┬──► LLM API (OpenAI)     │
+│  /api/chat ──────────────┬──► OpenRouter (LLM)      │
 │  /api/generate-image ────┤   ┌──────────────────┐   │
 │  /api/pool/* ────────────┤   │ AI Services      │   │
-│  /api/stripe/* ──────────┤   │ • Chat (gpt-4o)  │   │
-│  /api/auth/migrate ──────┤   │ • Images (DALL-E)│   │
+│  /api/stripe/* ──────────┤   │ • Chat (OpenRouter)│  │
+│  /api/auth/migrate ──────┤   │ • Images (FAL)   │   │
 │  /api/invites/* ─────────┤   │ • Moderation     │   │
 │  /api/share/* ───────────┤   └──────────────────┘   │
 │  /api/og/[token] ────────┘                          │

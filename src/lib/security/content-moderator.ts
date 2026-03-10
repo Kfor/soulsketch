@@ -34,18 +34,33 @@ export async function moderateWithAPI(
   const localCheck = moderateText(text);
   if (!localCheck.passed) return localCheck;
 
-  const apiKey = process.env.MODERATION_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return { passed: true };
 
   try {
-    const response = await fetch("https://api.openai.com/v1/moderations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+    const response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content:
+                'You are a content moderation classifier. Respond with ONLY a JSON object: {"flagged": true/false, "reason": "..."} if the user message contains harmful, sexual, violent, or inappropriate content. Be strict.',
+            },
+            { role: "user", content: text },
+          ],
+          temperature: 0,
+          max_tokens: 100,
+        }),
       },
-      body: JSON.stringify({ input: text }),
-    });
+    );
 
     // Design decision: fail open on API errors to prioritize availability.
     // Regex patterns still provide baseline protection. Monitor API error
@@ -53,14 +68,19 @@ export async function moderateWithAPI(
     if (!response.ok) return { passed: true };
 
     const data = await response.json();
-    const result = data.results?.[0];
+    const content = data.choices?.[0]?.message?.content;
 
-    if (result?.flagged) {
-      return {
-        passed: false,
-        reason:
-          "Your message was flagged by our content filter. Please keep things appropriate.",
-      };
+    try {
+      const result = JSON.parse(content);
+      if (result?.flagged) {
+        return {
+          passed: false,
+          reason:
+            "Your message was flagged by our content filter. Please keep things appropriate.",
+        };
+      }
+    } catch {
+      // If LLM response isn't valid JSON, fail open
     }
 
     return { passed: true };
