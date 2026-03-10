@@ -32,10 +32,9 @@ export async function ensureAnonymousAuth() {
 
 export async function linkEmailOTP(email: string) {
   const supabase = createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: true },
-  });
+  // Use updateUser to link email to the current anonymous user,
+  // not signInWithOtp which would create a new account.
+  const { error } = await supabase.auth.updateUser({ email });
   if (error) throw new Error(`OTP send failed: ${error.message}`);
 }
 
@@ -44,7 +43,7 @@ export async function verifyOTP(email: string, token: string) {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token,
-    type: "email",
+    type: "email_change",
   });
   if (error) throw new Error(`OTP verify failed: ${error.message}`);
   return data;

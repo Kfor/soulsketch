@@ -37,6 +37,7 @@ export default function ChatPage() {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [lastPortraitUrl, setLastPortraitUrl] = useState<string>("");
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isFreeTier, setIsFreeTier] = useState(true);
 
   // Result cards data
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -73,6 +74,16 @@ export default function ChatPage() {
         } = await supabase.auth.getUser();
 
         if (!user) throw new Error("Auth failed");
+
+        // Check entitlements for plan
+        const { data: entitlement } = await supabase
+          .from("entitlements")
+          .select("plan, export_credits")
+          .eq("user_id", user.id)
+          .single();
+        if (entitlement && entitlement.plan !== "free") {
+          setIsFreeTier(false);
+        }
 
         // Get or create session
         const { data: existing } = await supabase
@@ -359,7 +370,7 @@ export default function ChatPage() {
       {/* Messages area */}
       <main className="mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-4 py-4">
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} isFreeTier={true} />
+          <MessageBubble key={msg.id} message={msg} isFreeTier={isFreeTier} />
         ))}
 
         {loading && <TypingIndicator />}
@@ -372,7 +383,8 @@ export default function ChatPage() {
             zodiacMatches={zodiacMatches}
             userSign={summary.zodiac || "Unknown"}
             sessionId={sessionId || undefined}
-            isFreeTier={true}
+            isFreeTier={isFreeTier}
+            onRequireEmail={() => setShowEmailDialog(true)}
           />
         )}
 

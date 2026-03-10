@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ZodiacMatch } from "@/types";
+import { isAnonymousUser } from "@/lib/auth";
 import PortraitCard from "./PortraitCard";
 import KeywordCard from "./KeywordCard";
 import ZodiacCard from "./ZodiacCard";
@@ -13,6 +14,7 @@ interface ResultsPanelProps {
   userSign: string;
   isFreeTier?: boolean;
   sessionId?: string;
+  onRequireEmail?: () => void;
 }
 
 export default function ResultsPanel({
@@ -22,10 +24,20 @@ export default function ResultsPanel({
   userSign,
   isFreeTier = true,
   sessionId,
+  onRequireEmail,
 }: ResultsPanelProps) {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
+
+  const requireEmail = async (): Promise<boolean> => {
+    const anon = await isAnonymousUser();
+    if (anon && onRequireEmail) {
+      onRequireEmail();
+      return false;
+    }
+    return true;
+  };
 
   const handleShare = async () => {
     if (!sessionId) return;
@@ -57,6 +69,8 @@ export default function ResultsPanel({
   };
 
   const handleCheckout = async (priceType: "export" | "plus") => {
+    const canProceed = await requireEmail();
+    if (!canProceed) return;
     setCheckingOut(true);
     try {
       const res = await fetch("/api/stripe/checkout", {

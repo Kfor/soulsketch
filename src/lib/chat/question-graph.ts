@@ -18,9 +18,9 @@ const QUESTION_GRAPH: Record<string, QuestionNode> = {
       { label: "Either / surprise me", value: "any" },
     ],
     sketch_tag_mapping: {
-      male: { gender: "male" },
-      female: { gender: "female" },
-      any: { gender: "any" },
+      male: { gender_pref: "male" },
+      female: { gender_pref: "female" },
+      any: { gender_pref: "any" },
     },
     next_node_mapping: {
       male: "q2_body_type",
@@ -177,7 +177,7 @@ export function selectSketchAsset(
   detailLevel: "outline" | "simple" | "detailed",
 ): string {
   // Generate a deterministic placeholder based on tags
-  const gender = (tags.gender as string) ?? "any";
+  const gender = (tags.gender_pref as string) ?? "any";
   return `/sketches/${detailLevel}_${gender}.svg`;
 }
 

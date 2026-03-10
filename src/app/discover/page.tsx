@@ -175,12 +175,20 @@ export default function DiscoverPage() {
             <h1 className="text-lg font-bold text-text">Discover</h1>
             <p className="text-xs text-text-muted">Your soulmate recommendations</p>
           </div>
-          <button
-            onClick={() => router.push("/chat")}
-            className="rounded-lg bg-surface-light px-3 py-1.5 text-sm text-text-muted hover:text-text"
-          >
-            Back to Chat
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push("/matches")}
+              className="rounded-lg bg-primary/20 px-3 py-1.5 text-sm text-primary-light hover:bg-primary/30"
+            >
+              My Matches
+            </button>
+            <button
+              onClick={() => router.push("/chat")}
+              className="rounded-lg bg-surface-light px-3 py-1.5 text-sm text-text-muted hover:text-text"
+            >
+              Back to Chat
+            </button>
+          </div>
         </div>
       </header>
 
