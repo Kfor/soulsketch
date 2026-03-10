@@ -28,11 +28,11 @@ export async function generateChatResponse(
   messages: Pick<ChatMessage, "role" | "content_text">[],
   phase: string,
 ): Promise<LLMResponse> {
-  const apiKey = process.env.AI_LLM_API_KEY;
-  const apiUrl = process.env.AI_LLM_API_URL;
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
   const model = process.env.AI_LLM_MODEL || "gpt-4o";
 
-  if (!apiKey || !apiUrl) {
+  if (!apiKey) {
     // Fallback response when no LLM is configured
     return generateFallbackResponse(summary, phase);
   }

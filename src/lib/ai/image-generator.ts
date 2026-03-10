@@ -6,12 +6,9 @@ export interface ImageGenerationResult {
 export async function generatePortrait(
   prompt: string,
 ): Promise<ImageGenerationResult> {
-  const apiKey = process.env.AI_IMAGE_API_KEY;
-  const apiUrl =
-    process.env.AI_IMAGE_API_URL ||
-    "https://api.openai.com/v1/images/generations";
+  const falKey = process.env.FAL_KEY;
 
-  if (!apiKey) {
+  if (!falKey) {
     // Return a placeholder when no API key is configured
     return {
       url: createPlaceholderDataUrl(prompt),
@@ -19,35 +16,57 @@ export async function generatePortrait(
     };
   }
 
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "dall-e-3",
-      prompt: `${prompt}. Style: high-quality digital portrait illustration, warm lighting, soft colors.`,
-      n: 1,
-      size: "1024x1024",
-      quality: "standard",
-    }),
-  });
+  const styledPrompt = `${prompt}. Style: high-quality digital portrait illustration, warm lighting, soft colors.`;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Image API error:", response.status, errorText);
+  try {
+    const response = await fetch(
+      "https://queue.fal.run/fal-ai/flux/schnell",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Key ${falKey}`,
+        },
+        body: JSON.stringify({
+          prompt: styledPrompt,
+          image_size: "square_hd",
+          num_images: 1,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("FAL API error:", response.status, errorText);
+      return {
+        url: createPlaceholderDataUrl(prompt),
+        revised_prompt: prompt,
+      };
+    }
+
+    const data = await response.json();
+
+    // FAL returns { images: [{ url, content_type }], ... }
+    const imageUrl = data.images?.[0]?.url;
+    if (!imageUrl) {
+      console.error("FAL API returned no images:", data);
+      return {
+        url: createPlaceholderDataUrl(prompt),
+        revised_prompt: prompt,
+      };
+    }
+
+    return {
+      url: imageUrl,
+      revised_prompt: styledPrompt,
+    };
+  } catch (error) {
+    console.error("FAL image generation failed:", error);
     return {
       url: createPlaceholderDataUrl(prompt),
       revised_prompt: prompt,
     };
   }
-
-  const data = await response.json();
-  return {
-    url: data.data[0].url,
-    revised_prompt: data.data[0].revised_prompt,
-  };
 }
 
 export async function refinePortrait(
@@ -69,6 +88,6 @@ function createPlaceholderDataUrl(_prompt: string): string {
     </defs>
     <rect width="512" height="512" fill="url(#bg)" rx="24"/>
     <text x="256" y="240" text-anchor="middle" fill="white" font-size="20" font-family="sans-serif">AI Portrait</text>
-    <text x="256" y="280" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="14" font-family="sans-serif">(Configure AI_IMAGE_API_KEY)</text>
+    <text x="256" y="280" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="14" font-family="sans-serif">(Configure FAL_KEY)</text>
   </svg>`)}`;
 }

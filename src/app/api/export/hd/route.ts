@@ -46,16 +46,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    const summary = (session.summary_json as SessionSummary) ?? {};
-    const prompt = buildImagePrompt(summary);
-
-    // Generate HD portrait (higher quality)
-    const result = await generatePortrait(
-      `${prompt} Ultra high resolution, 4K quality, extremely detailed.`,
-    );
-
-    // Deduct one export credit atomically using optimistic concurrency:
-    // only update if credits haven't changed since we read them.
+    // Deduct one export credit atomically BEFORE generating the image.
+    // Uses optimistic concurrency: only update if credits haven't changed.
     const { data: updated, error: deductError } = await supabase
       .from("entitlements")
       .update({ export_credits: entitlement.export_credits - 1 })
@@ -70,6 +62,14 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
+
+    const summary = (session.summary_json as SessionSummary) ?? {};
+    const prompt = buildImagePrompt(summary);
+
+    // Generate HD portrait (higher quality prompt)
+    const result = await generatePortrait(
+      `${prompt} Ultra high resolution, extremely detailed, masterpiece quality.`,
+    );
 
     // Save generated HD asset record
     await supabase.from("generated_assets").insert({

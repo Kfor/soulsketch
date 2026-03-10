@@ -271,6 +271,13 @@ export default function ChatPage() {
         if (smry.zodiac) {
           setZodiacMatches(generateZodiacChart(smry.zodiac));
         }
+
+        // Prompt anonymous users to link their email to save results
+        const { isAnonymousUser } = await import("@/lib/auth");
+        const anon = await isAnonymousUser();
+        if (anon) {
+          setShowEmailDialog(true);
+        }
       }
     } catch (error) {
       console.error("Send error:", error);

@@ -61,9 +61,9 @@ Required variables:
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side only)
-- `OPENAI_API_KEY` - OpenAI API key for DALL-E and GPT
-- `AI_IMAGE_PROVIDER` - Image provider name (default: "dalle")
-- `MAX_FREE_REFINEMENTS` - Max free refinements per session (default: 5)
+- `OPENROUTER_API_KEY` - OpenRouter API key for LLM chat and moderation
+- `FAL_KEY` - FAL API key for image generation
+- `AI_LLM_MODEL` - LLM model identifier (default: "gpt-4o")
 - `STRIPE_SECRET_KEY` - Stripe test secret key
 - `STRIPE_WEBHOOK_SECRET` - From `stripe listen` output (whsec_xxx)
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe test publishable key
@@ -78,7 +78,7 @@ Required variables:
 ## Test Architecture
 
 - Unit tests use Vitest with mocked dependencies
-- No external API calls in tests (all OpenAI/Supabase calls are mocked)
+- No external API calls in tests (all OpenRouter/FAL/Supabase calls are mocked)
 - E2E tests use Playwright with Chromium
 - The dev server auto-starts via Playwright config when running E2E tests
 - For Supabase-dependent tests, a local Supabase instance is required (`npx supabase start`)
