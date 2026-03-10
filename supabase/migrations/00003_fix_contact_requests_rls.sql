@@ -1,3 +1,6 @@
+-- Use soulsketch schema for isolation on smallproj shared instance
+SET search_path TO soulsketch, public, extensions;
+
 -- Fix: Allow both from_user and to_user to UPDATE contact_requests.
 -- The mutual like flow requires from_user to update their own sent request
 -- to "accepted" when a mutual match is detected.

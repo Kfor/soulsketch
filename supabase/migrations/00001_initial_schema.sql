@@ -1,3 +1,6 @@
+-- Use soulsketch schema for isolation on smallproj shared instance
+SET search_path TO soulsketch, public, extensions;
+
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -288,11 +291,11 @@ BEGIN
   INSERT INTO entitlements (user_id) VALUES (NEW.id);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = soulsketch, public, extensions;
 
-CREATE TRIGGER on_auth_user_created
+CREATE TRIGGER on_auth_user_created_soulsketch
   AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+  FOR EACH ROW EXECUTE FUNCTION soulsketch.handle_new_user();
 
 -- ============================================================
 -- Indexes for performance

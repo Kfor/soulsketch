@@ -1,3 +1,6 @@
+-- Use soulsketch schema for isolation on smallproj shared instance
+SET search_path TO soulsketch, public, extensions;
+
 -- ============================================================
 -- R3+R4+R6: Pool, Payments & Growth
 -- ============================================================
@@ -65,7 +68,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = soulsketch, public, extensions
 AS $$
 BEGIN
   RETURN QUERY
@@ -117,7 +120,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = soulsketch, public, extensions
 AS $$
 BEGIN
   RETURN QUERY
@@ -140,7 +143,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = soulsketch, public, extensions
 AS $$
 BEGIN
   RETURN QUERY
